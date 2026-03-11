@@ -5,7 +5,7 @@ import hashlib
 import hmac
 import os
 from datetime import datetime
-
+from sqlalchemy import func
 from database import Base, engine, SessionLocal
 from models import Conversation
 
