@@ -10,7 +10,7 @@ from database import Base, engine, SessionLocal
 from schemas import WebhookMessage
 from service import upsert_message, seed_demo_data
 from models import Conversation
-
+from sqlalchemy import func
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
 def validate_signature(body: bytes, signature: str | None) -> bool:
     if not WEBHOOK_SECRET:
@@ -111,4 +111,34 @@ def list_conversations(db: Session = Depends(get_db)):
             "ultima_mensagem": row.last_message,
         }
         for row in rows
+
+@app.get("/report/conversas-iniciadas")
+def report_conversas_iniciadas(db: Session = Depends(get_db)):
+    
+    resultados = (
+        db.query(
+            Conversation.seller_name,
+            func.count(Conversation.id).label("conversas_iniciadas")
+        )
+        .filter(Conversation.started_by == "vendedor")
+        .group_by(Conversation.seller_name)
+        .all()
+    )
+
+    return [
+        {
+            "vendedor": r.seller_name,
+            "conversas_iniciadas": r.conversas_iniciadas
+        }
+        for r in resultados
     ]
+
+
+
+
+
+
+    ]
+
+
+
